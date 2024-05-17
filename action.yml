@@ -25,5 +25,5 @@ outputs:
   artifacts:
     description: The artifacts that have been uploaded with their name, url and size in bytes.
 runs:
-  using: node20"
+  using: node20
   main: dist/index.js
