@@ -1,12 +1,13 @@
-import { Inputs } from '../interfaces'
+import { Artifact, Inputs } from '../interfaces'
 import { UrlHelper } from '../utils/url'
 import { error, info } from '@actions/core'
 import { context } from '@actions/github'
 import { parse } from 'canonical-path'
 import { createReadStream } from 'fs'
+import { lstat } from 'fs/promises'
 import fetch from 'node-fetch'
 
-export async function upload(inputs: Inputs) {
+export async function upload(inputs: Inputs): Promise<Artifact[]> {
   const branch = context.ref.replace('refs/heads/', '')
 
   const targetdir = inputs.targetdir
@@ -16,28 +17,37 @@ export async function upload(inputs: Inputs) {
   const repo = new UrlHelper(inputs.artifactory).appendPath('repository', inputs.repo)
   info(`Uploading files to ${repo.href}...`)
 
-  const artifacts: string[] = []
-  for (const path of inputs.files) {
-    const url = new UrlHelper(repo.href).appendPath(...targetdir, parse(path).base)
+  const artifacts: Artifact[] = []
+  for (const file of inputs.files) {
+    const fileBase = parse(file).base
+    const url = new UrlHelper(repo.href).appendPath(...targetdir, fileBase)
 
-    const file = createReadStream(path)
+    const readStream = createReadStream(file)
     const response = await fetch(url.href, {
       method: 'PUT',
-      body: file,
+      body: readStream,
       headers: {
         authorization: `Basic ${Buffer.from(inputs.user + ':' + inputs.password).toString('base64')}`,
       },
     })
 
     if (response.ok) {
-      artifacts.push(url.href)
-      info(`${path} upload completed`)
+      info(`${file} upload completed`)
+
+      const fileStat = await lstat(file)
+      artifacts.push({
+        name: fileBase,
+        size: fileStat.size,
+        url: url,
+      })
     } else {
-      error(`${path} upload failed with: ${response.status.toString()} - ${response.statusText}`)
+      error(`${file} upload failed with: ${response.status.toString()} - ${response.statusText}`)
     }
   }
 
   if (artifacts.length < inputs.files.length) {
     throw Error(`Upload failed for ${(inputs.files.length - artifacts.length).toString()} out of ${inputs.files.length.toString()} files`)
   }
+
+  return artifacts
 }

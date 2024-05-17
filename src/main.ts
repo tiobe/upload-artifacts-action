@@ -1,9 +1,10 @@
-import { debug, getInput, getMultilineInput, setFailed } from '@actions/core'
+import { debug, getInput, getMultilineInput, setFailed, setOutput } from '@actions/core'
 import { Inputs } from './interfaces'
 import { upload } from './upload/upload'
 import { lstat } from 'fs/promises'
 import fetch from 'node-fetch'
 import { UrlHelper } from './utils/url'
+import { writeSummary } from './summary/summary'
 
 main().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : 'reason unknown'
@@ -13,11 +14,14 @@ main().catch((error: unknown) => {
 async function main() {
   const inputs = await getInputs()
 
-  await upload(inputs)
+  const artifacts = await upload(inputs)
+  await writeSummary(artifacts)
+
+  setOutput('artifacts', artifacts)
 }
 
 async function getInputs(): Promise<Inputs> {
-  const paths = getMultilineInput('files')
+  const files = getMultilineInput('files')
   const artifactory = getInput('artifactory')
   const repo = getInput('repo')
   const targetdir = getInput('targetdir')
@@ -28,11 +32,11 @@ async function getInputs(): Promise<Inputs> {
     throw Error('If not using the github-artifacts repository, a targetdir should be set.')
   }
 
-  for (const path of paths) {
-    const pathLstat = await lstat(path)
+  for (const file of files) {
+    const fileStat = await lstat(file)
 
-    if (pathLstat.isDirectory()) {
-      throw Error(`Uploading a directory is not supported (found directory ${path})`)
+    if (fileStat.isDirectory()) {
+      throw Error(`Uploading a directory is not supported (found directory ${file})`)
     }
   }
 
@@ -50,7 +54,7 @@ async function getInputs(): Promise<Inputs> {
   }
 
   return {
-    files: paths,
+    files,
     artifactory,
     repo,
     targetdir,

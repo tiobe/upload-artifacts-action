@@ -24,6 +24,7 @@ const upload_1 = __nccwpck_require__(9593);
 const promises_1 = __nccwpck_require__(3292);
 const node_fetch_1 = __importDefault(__nccwpck_require__(1793));
 const url_1 = __nccwpck_require__(9422);
+const summary_1 = __nccwpck_require__(1226);
 main().catch((error) => {
     const message = error instanceof Error ? error.message : 'reason unknown';
     (0, core_1.setFailed)(`Action failed: ${message}`);
@@ -31,12 +32,14 @@ main().catch((error) => {
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const inputs = yield getInputs();
-        yield (0, upload_1.upload)(inputs);
+        const artifacts = yield (0, upload_1.upload)(inputs);
+        yield (0, summary_1.writeSummary)(artifacts);
+        (0, core_1.setOutput)('artifacts', artifacts);
     });
 }
 function getInputs() {
     return __awaiter(this, void 0, void 0, function* () {
-        const paths = (0, core_1.getMultilineInput)('files');
+        const files = (0, core_1.getMultilineInput)('files');
         const artifactory = (0, core_1.getInput)('artifactory');
         const repo = (0, core_1.getInput)('repo');
         const targetdir = (0, core_1.getInput)('targetdir');
@@ -45,10 +48,10 @@ function getInputs() {
         if (repo !== 'github-artifacts' && targetdir === '') {
             throw Error('If not using the github-artifacts repository, a targetdir should be set.');
         }
-        for (const path of paths) {
-            const pathLstat = yield (0, promises_1.lstat)(path);
-            if (pathLstat.isDirectory()) {
-                throw Error(`Uploading a directory is not supported (found directory ${path})`);
+        for (const file of files) {
+            const fileStat = yield (0, promises_1.lstat)(file);
+            if (fileStat.isDirectory()) {
+                throw Error(`Uploading a directory is not supported (found directory ${file})`);
             }
         }
         const url = new url_1.UrlHelper(artifactory).appendPath('service/rest/v1/repositories', repo);
@@ -63,7 +66,7 @@ function getInputs() {
             throw Error(`${url.href} gave response: ${response.status.toString()} - ${response.statusText}`);
         }
         return {
-            files: paths,
+            files,
             artifactory,
             repo,
             targetdir,
@@ -71,6 +74,83 @@ function getInputs() {
             password,
         };
     });
+}
+
+
+/***/ }),
+
+/***/ 1226:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.writeSummary = void 0;
+const core_1 = __nccwpck_require__(2186);
+function writeSummary(artifacts) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core_1.summary.addHeading('Artifacts uploaded');
+        core_1.summary.addTable(createArtifactsTable(artifacts));
+        yield core_1.summary.write();
+    });
+}
+exports.writeSummary = writeSummary;
+function createArtifactsTable(artifacts) {
+    const rows = [];
+    const headers = [
+        {
+            data: 'Name',
+            header: true,
+        },
+        {
+            data: 'Size',
+            header: true,
+        },
+        {
+            data: '',
+        },
+    ];
+    rows.push(headers);
+    for (const artifact of artifacts) {
+        const row = [
+            {
+                data: artifact.name,
+            },
+            {
+                // get size in MiB
+                data: createSize(artifact.size),
+            },
+            {
+                data: createLink('download', artifact.url),
+            },
+        ];
+        rows.push(row);
+    }
+    return rows;
+}
+function createLink(name, url) {
+    return `<a class="link" href="${url.href}">${name}</a>`;
+}
+function createSize(size) {
+    const sizeInKb = size / 1024;
+    if (sizeInKb > 1024 * 1024) {
+        return `${(sizeInKb / (1024 * 1024)).toFixed(2)} GiB`;
+    }
+    else if (sizeInKb > 1024) {
+        return `${(sizeInKb / 1024).toFixed(2)} MiB`;
+    }
+    else {
+        return `${sizeInKb.toFixed(2)} KiB`;
+    }
 }
 
 
@@ -100,6 +180,7 @@ const core_1 = __nccwpck_require__(2186);
 const github_1 = __nccwpck_require__(5438);
 const canonical_path_1 = __nccwpck_require__(5806);
 const fs_1 = __nccwpck_require__(7147);
+const promises_1 = __nccwpck_require__(3292);
 const node_fetch_1 = __importDefault(__nccwpck_require__(1793));
 function upload(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -110,22 +191,28 @@ function upload(inputs) {
         const repo = new url_1.UrlHelper(inputs.artifactory).appendPath('repository', inputs.repo);
         (0, core_1.info)(`Uploading files to ${repo.href}...`);
         const artifacts = [];
-        for (const path of inputs.files) {
-            const url = new url_1.UrlHelper(repo.href).appendPath(...targetdir, (0, canonical_path_1.parse)(path).base);
-            const file = (0, fs_1.createReadStream)(path);
+        for (const file of inputs.files) {
+            const fileBase = (0, canonical_path_1.parse)(file).base;
+            const url = new url_1.UrlHelper(repo.href).appendPath(...targetdir, fileBase);
+            const readStream = (0, fs_1.createReadStream)(file);
             const response = yield (0, node_fetch_1.default)(url.href, {
                 method: 'PUT',
-                body: file,
+                body: readStream,
                 headers: {
                     authorization: `Basic ${Buffer.from(inputs.user + ':' + inputs.password).toString('base64')}`,
                 },
             });
             if (response.ok) {
-                artifacts.push(url.href);
-                (0, core_1.info)(`${path} upload completed`);
+                (0, core_1.info)(`${file} upload completed`);
+                const fileStat = yield (0, promises_1.lstat)(file);
+                artifacts.push({
+                    name: fileBase,
+                    size: fileStat.size,
+                    url: url,
+                });
             }
             else {
-                (0, core_1.error)(`${path} upload failed with: ${response.status.toString()} - ${response.statusText}`);
+                (0, core_1.error)(`${file} upload failed with: ${response.status.toString()} - ${response.statusText}`);
             }
         }
         if (artifacts.length < inputs.files.length) {
