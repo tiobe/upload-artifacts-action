@@ -27,7 +27,7 @@ export async function upload(inputs: Inputs): Promise<Artifact[]> {
       method: 'PUT',
       body: readStream,
       headers: {
-        authorization: `Basic ${Buffer.from(inputs.user + ':' + inputs.password).toString('base64')}`,
+        authorization: `Basic ${Buffer.from(inputs.username + ':' + inputs.password).toString('base64')}`,
       },
     })
 

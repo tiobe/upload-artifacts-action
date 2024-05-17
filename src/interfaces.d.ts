@@ -5,7 +5,7 @@ export interface Inputs {
   artifactory: string
   repo: string
   targetdir: string
-  user: string
+  username: string
   password: string
 }
 

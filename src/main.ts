@@ -25,7 +25,7 @@ async function getInputs(): Promise<Inputs> {
   const artifactory = getInput('artifactory')
   const repo = getInput('repo')
   const targetdir = getInput('targetdir')
-  const user = getInput('user')
+  const username = getInput('username')
   const password = getInput('password')
 
   if (repo !== 'github-artifacts' && targetdir === '') {
@@ -45,7 +45,7 @@ async function getInputs(): Promise<Inputs> {
   const response = await fetch(url.href, {
     headers: {
       accept: 'application/json',
-      authorization: `Basic ${Buffer.from(user + ':' + password).toString('base64')}`,
+      authorization: `Basic ${Buffer.from(username + ':' + password).toString('base64')}`,
     },
   })
 
@@ -58,7 +58,7 @@ async function getInputs(): Promise<Inputs> {
     artifactory,
     repo,
     targetdir,
-    user,
+    username,
     password,
   }
 }

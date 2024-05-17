@@ -10,7 +10,7 @@ export async function download(url: UrlHelper, inputs: Inputs) {
   const response = await fetch(url.href, {
     method: 'GET',
     headers: {
-      authorization: `Basic ${Buffer.from(inputs.user + ':' + inputs.password).toString('base64')}`,
+      authorization: `Basic ${Buffer.from(inputs.username + ':' + inputs.password).toString('base64')}`,
     },
   })
   if (response.ok) {

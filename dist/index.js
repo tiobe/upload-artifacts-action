@@ -43,7 +43,7 @@ function getInputs() {
         const artifactory = (0, core_1.getInput)('artifactory');
         const repo = (0, core_1.getInput)('repo');
         const targetdir = (0, core_1.getInput)('targetdir');
-        const user = (0, core_1.getInput)('user');
+        const username = (0, core_1.getInput)('username');
         const password = (0, core_1.getInput)('password');
         if (repo !== 'github-artifacts' && targetdir === '') {
             throw Error('If not using the github-artifacts repository, a targetdir should be set.');
@@ -59,7 +59,7 @@ function getInputs() {
         const response = yield (0, node_fetch_1.default)(url.href, {
             headers: {
                 accept: 'application/json',
-                authorization: `Basic ${Buffer.from(user + ':' + password).toString('base64')}`,
+                authorization: `Basic ${Buffer.from(username + ':' + password).toString('base64')}`,
             },
         });
         if (!response.ok) {
@@ -70,7 +70,7 @@ function getInputs() {
             artifactory,
             repo,
             targetdir,
-            user,
+            username,
             password,
         };
     });
@@ -199,7 +199,7 @@ function upload(inputs) {
                 method: 'PUT',
                 body: readStream,
                 headers: {
-                    authorization: `Basic ${Buffer.from(inputs.user + ':' + inputs.password).toString('base64')}`,
+                    authorization: `Basic ${Buffer.from(inputs.username + ':' + inputs.password).toString('base64')}`,
                 },
             });
             if (response.ok) {
