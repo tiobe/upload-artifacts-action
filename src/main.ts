@@ -5,7 +5,7 @@ import { lstat } from 'fs/promises'
 import fetch from 'node-fetch'
 import { UrlHelper } from './utils/url'
 
-main().catch(error => {
+main().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : 'reason unknown'
   setFailed(`Action failed: ${message}`)
 })
@@ -46,7 +46,7 @@ async function getInputs(): Promise<Inputs> {
   })
 
   if (!response.ok) {
-    throw Error(`${url.href} gave response: ${response.status} - ${response.statusText}`)
+    throw Error(`${url.href} gave response: ${response.status.toString()} - ${response.statusText}`)
   }
 
   return {

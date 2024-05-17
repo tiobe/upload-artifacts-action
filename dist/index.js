@@ -24,7 +24,7 @@ const upload_1 = __nccwpck_require__(9593);
 const promises_1 = __nccwpck_require__(3292);
 const node_fetch_1 = __importDefault(__nccwpck_require__(1793));
 const url_1 = __nccwpck_require__(9422);
-main().catch(error => {
+main().catch((error) => {
     const message = error instanceof Error ? error.message : 'reason unknown';
     (0, core_1.setFailed)(`Action failed: ${message}`);
 });
@@ -36,12 +36,21 @@ function main() {
 }
 function getInputs() {
     return __awaiter(this, void 0, void 0, function* () {
-        const paths = (0, core_1.getMultilineInput)('path');
+        const paths = (0, core_1.getMultilineInput)('files');
         const artifactory = (0, core_1.getInput)('artifactory');
         const repo = (0, core_1.getInput)('repo');
         const targetdir = (0, core_1.getInput)('targetdir');
         const user = (0, core_1.getInput)('user');
         const password = (0, core_1.getInput)('password');
+        if (repo !== 'github-artifacts' && targetdir === '') {
+            throw Error('If not using the github-artifacts repository, a targetdir should be set.');
+        }
+        for (const path of paths) {
+            const pathLstat = yield (0, promises_1.lstat)(path);
+            if (pathLstat.isDirectory()) {
+                throw Error(`Uploading a directory is not supported (found directory ${path})`);
+            }
+        }
         const url = new url_1.UrlHelper(artifactory).appendPath('service/rest/v1/repositories', repo);
         (0, core_1.debug)(`Validating: ${url.href}`);
         const response = yield (0, node_fetch_1.default)(url.href, {
@@ -51,16 +60,10 @@ function getInputs() {
             },
         });
         if (!response.ok) {
-            throw Error(`${url.href} gave response: ${response.status} - ${response.statusText}`);
-        }
-        for (const path of paths) {
-            const pathLstat = yield (0, promises_1.lstat)(path);
-            if (pathLstat.isDirectory()) {
-                throw Error(`Uploading a directory is not supported (found directory ${path})`);
-            }
+            throw Error(`${url.href} gave response: ${response.status.toString()} - ${response.statusText}`);
         }
         return {
-            paths,
+            files: paths,
             artifactory,
             repo,
             targetdir,
@@ -106,8 +109,8 @@ function upload(inputs) {
             : [github_1.context.repo.owner, github_1.context.repo.repo, branch, github_1.context.workflow, `run_${github_1.context.runId.toString()}`, `attempt_${github_1.context.runNumber.toString()}`];
         const repo = new url_1.UrlHelper(inputs.artifactory).appendPath('repository', inputs.repo);
         (0, core_1.info)(`Uploading files to ${repo.href}...`);
-        let failedUploads = 0;
-        for (const path of inputs.paths) {
+        const artifacts = [];
+        for (const path of inputs.files) {
             const url = new url_1.UrlHelper(repo.href).appendPath(...targetdir, (0, canonical_path_1.parse)(path).base);
             const file = (0, fs_1.createReadStream)(path);
             const response = yield (0, node_fetch_1.default)(url.href, {
@@ -118,16 +121,17 @@ function upload(inputs) {
                 },
             });
             if (response.ok) {
+                artifacts.push(url.href);
                 (0, core_1.info)(`${path} upload completed`);
             }
             else {
-                failedUploads++;
                 (0, core_1.error)(`${path} upload failed with: ${response.status.toString()} - ${response.statusText}`);
             }
         }
-        if (failedUploads > 0) {
-            throw Error(`Upload failed for ${failedUploads} out of ${inputs.paths.length} files`);
+        if (artifacts.length < inputs.files.length) {
+            throw Error(`Upload failed for ${(inputs.files.length - artifacts.length).toString()} out of ${inputs.files.length.toString()} files`);
         }
+        return artifacts;
     });
 }
 exports.upload = upload;

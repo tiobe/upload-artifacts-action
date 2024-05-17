@@ -9,7 +9,7 @@ export class UrlHelper {
     this.url = new URL(url)
   }
 
-  appendPath(...paths: string[]): UrlHelper {
+  appendPath(...paths: string[]): this {
     for (const path of paths) {
       if (this.url.pathname.endsWith('/')) {
         if (path.startsWith('/')) {

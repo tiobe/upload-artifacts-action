@@ -16,7 +16,7 @@ export async function upload(inputs: Inputs) {
   const repo = new UrlHelper(inputs.artifactory).appendPath('repository', inputs.repo)
   info(`Uploading files to ${repo.href}...`)
 
-  let failedUploads = 0
+  const artifacts: string[] = []
   for (const path of inputs.files) {
     const url = new UrlHelper(repo.href).appendPath(...targetdir, parse(path).base)
 
@@ -30,14 +30,14 @@ export async function upload(inputs: Inputs) {
     })
 
     if (response.ok) {
+      artifacts.push(url.href)
       info(`${path} upload completed`)
     } else {
-      failedUploads++
       error(`${path} upload failed with: ${response.status.toString()} - ${response.statusText}`)
     }
   }
 
-  if (failedUploads > 0) {
-    throw Error(`Upload failed for ${failedUploads} out of ${inputs.files.length} files`)
+  if (artifacts.length < inputs.files.length) {
+    throw Error(`Upload failed for ${(inputs.files.length - artifacts.length).toString()} out of ${inputs.files.length.toString()} files`)
   }
 }
