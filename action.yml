@@ -1,0 +1,26 @@
+name: TIOBE Nexus Upload
+description: Upload artifacts to the Nexus repository
+inputs:
+  files:
+    description: Files to upload (directories are not supported)
+    required: true
+  username:
+    description: Nexus username
+    required: false
+  password:
+    description: Password of the Nexus user
+    required: false
+  artifactory:
+    description: Nexus artifactory to upload to
+    required: false
+    default: https://artifacts.tiobe.com
+  repo:
+    description: Name of the Nexus repository to upload to
+    required: false
+    default: github-artifacts
+  targetdir:
+    description: Target directory for the artifacts inside of the Nexus repo
+    required: false
+runs:
+  using: node20"
+  main: dist/index.js
