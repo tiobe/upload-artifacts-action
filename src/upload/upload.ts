@@ -12,7 +12,14 @@ export async function upload(inputs: Inputs): Promise<Artifact[]> {
 
   const targetdir = inputs.targetdir
     ? [inputs.targetdir]
-    : [context.repo.owner, context.repo.repo, branch, context.workflow, `run_${context.runId.toString()}`, `attempt_${context.runNumber.toString()}`]
+    : [
+        context.repo.owner,
+        context.repo.repo,
+        branch,
+        context.workflow,
+        `run_${context.runNumber.toString()}`,
+        `attempt_${process.env.GITHUB_RUN_ATTEMPT ?? '1'}`,
+      ]
 
   const repo = new UrlHelper(inputs.artifactory).appendPath('repository', inputs.repo)
   info(`Uploading files to ${repo.href}...`)

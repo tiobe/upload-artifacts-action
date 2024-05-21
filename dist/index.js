@@ -184,10 +184,18 @@ const promises_1 = __nccwpck_require__(3292);
 const node_fetch_1 = __importDefault(__nccwpck_require__(1793));
 function upload(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         const branch = github_1.context.ref.replace('refs/heads/', '');
         const targetdir = inputs.targetdir
             ? [inputs.targetdir]
-            : [github_1.context.repo.owner, github_1.context.repo.repo, branch, github_1.context.workflow, `run_${github_1.context.runId.toString()}`, `attempt_${github_1.context.runNumber.toString()}`];
+            : [
+                github_1.context.repo.owner,
+                github_1.context.repo.repo,
+                branch,
+                github_1.context.workflow,
+                `run_${github_1.context.runNumber.toString()}`,
+                `attempt_${(_a = process.env.GITHUB_RUN_ATTEMPT) !== null && _a !== void 0 ? _a : '1'}`,
+            ];
         const repo = new url_1.UrlHelper(inputs.artifactory).appendPath('repository', inputs.repo);
         (0, core_1.info)(`Uploading files to ${repo.href}...`);
         const artifacts = [];
