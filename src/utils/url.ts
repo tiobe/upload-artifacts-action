@@ -17,12 +17,10 @@ export class UrlHelper {
         } else {
           this.url.pathname += path
         }
+      } else if (path.startsWith('/')) {
+        this.url.pathname += path
       } else {
-        if (path.startsWith('/')) {
-          this.url.pathname += path
-        } else {
-          this.url.pathname += '/' + path
-        }
+        this.url.pathname += '/' + path
       }
     }
     return this

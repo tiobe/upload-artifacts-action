@@ -1,5 +1,3 @@
-import { UrlHelper } from './utils/url'
-
 export interface Inputs {
   files: string[]
   artifactory: string
@@ -12,5 +10,5 @@ export interface Inputs {
 export interface Artifact {
   name: string
   size: number
-  url: UrlHelper
+  url: string
 }

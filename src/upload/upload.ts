@@ -45,7 +45,7 @@ export async function upload(inputs: Inputs): Promise<Artifact[]> {
       artifacts.push({
         name: fileBase,
         size: fileStat.size,
-        url: url,
+        url: url.href,
       })
     } else {
       error(`${file} upload failed with: ${response.status.toString()} - ${response.statusText}`)
