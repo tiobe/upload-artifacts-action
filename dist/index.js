@@ -138,7 +138,7 @@ function createArtifactsTable(artifacts) {
     return rows;
 }
 function createLink(name, url) {
-    return `<a class="link" href="${url.href}">${name}</a>`;
+    return `<a class="link" href="${url}">${name}</a>`;
 }
 function createSize(size) {
     const sizeInKb = size / 1024;
@@ -216,7 +216,7 @@ function upload(inputs) {
                 artifacts.push({
                     name: fileBase,
                     size: fileStat.size,
-                    url: url,
+                    url: url.href,
                 });
             }
             else {
@@ -258,13 +258,11 @@ class UrlHelper {
                     this.url.pathname += path;
                 }
             }
+            else if (path.startsWith('/')) {
+                this.url.pathname += path;
+            }
             else {
-                if (path.startsWith('/')) {
-                    this.url.pathname += path;
-                }
-                else {
-                    this.url.pathname += '/' + path;
-                }
+                this.url.pathname += '/' + path;
             }
         }
         return this;

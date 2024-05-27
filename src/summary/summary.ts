@@ -1,7 +1,6 @@
 import { summary } from '@actions/core'
 import { Artifact } from '../interfaces'
 import { SummaryTableCell, SummaryTableRow } from '@actions/core/lib/summary'
-import { UrlHelper } from '../utils/url'
 
 export async function writeSummary(artifacts: Artifact[]) {
   summary.addHeading('Artifacts uploaded')
@@ -49,8 +48,8 @@ function createArtifactsTable(artifacts: Artifact[]): SummaryTableRow[] {
   return rows
 }
 
-function createLink(name: string, url: UrlHelper): string {
-  return `<a class="link" href="${url.href}">${name}</a>`
+function createLink(name: string, url: string): string {
+  return `<a class="link" href="${url}">${name}</a>`
 }
 
 function createSize(size: number) {
