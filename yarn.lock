@@ -72,10 +72,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.2.0, @eslint/js@npm:^9.2.0":
+"@eslint/js@npm:9.2.0":
   version: 9.2.0
   resolution: "@eslint/js@npm:9.2.0"
   checksum: 10c0/89632466d329d9dd68c6ec24290e407f0950ca8c4b7f3750b82457daa7f6233799ccbc956cd84231f9544efbefddd69833ee82658883ca673cfca9e4b8e0713a
+  languageName: node
+  linkType: hard
+
+"@eslint/js@npm:^9.6.0":
+  version: 9.6.0
+  resolution: "@eslint/js@npm:9.6.0"
+  checksum: 10c0/83967a7e59f2e958c9bbb3acd0929cad00d59d927ad786ed8e0d30b07f983c6bea3af6f4ad32da32145db40b7a741a816ba339bdd8960fc7fc8231716d943b7f
   languageName: node
   linkType: hard
 
@@ -1516,7 +1523,7 @@ __metadata:
   dependencies:
     "@actions/core": "npm:^1.10.1"
     "@actions/github": "npm:^6.0.0"
-    "@eslint/js": "npm:^9.2.0"
+    "@eslint/js": "npm:^9.6.0"
     "@types/node": "npm:^20.12.7"
     "@typescript-eslint/parser": "npm:^7.9.0"
     "@vercel/ncc": "npm:^0.38.1"
