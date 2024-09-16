@@ -72,10 +72,14 @@ function downloadArtifact(inputs) {
                 return (0, semver_1.gt)(currentArtifact.version, maxArtifact.version) ? currentArtifact : maxArtifact;
             });
         }
+        let ok = true;
         for (const file of artifact.files) {
             // size is not used, so use placeholder
-            yield download({ name: file.name, url: file.downloadUrl, size: 0 }, inputs.targetdir, headers);
+            const succeeded = yield download({ name: file.name, url: file.downloadUrl, size: 0 }, inputs.targetdir, headers);
+            if (!succeeded)
+                ok = false;
         }
+        return ok;
     });
 }
 function retrieveArtifacts(artifactory, repo, headers) {
@@ -124,10 +128,14 @@ function getArtifactsWithName(items, name) {
 }
 function downloadUrls(inputs) {
     return __awaiter(this, void 0, void 0, function* () {
+        let ok = true;
         const headers = getHeaders(inputs.username, inputs.password);
         for (const artifact of inputs.artifacts) {
-            yield download(artifact, inputs.targetdir, headers);
+            const succeeded = yield download(artifact, inputs.targetdir, headers);
+            if (!succeeded)
+                ok = false;
         }
+        return ok;
     });
 }
 function download(artifact, targetdir, headers) {
@@ -144,6 +152,11 @@ function download(artifact, targetdir, headers) {
             response.body.pipe(fileStream);
             yield (0, promises_2.finished)(response.body.pipe(fileStream));
         }
+        else {
+            (0, core_1.error)(`${artifact.name} download failed with: ${response.status.toString()} - ${response.statusText}`);
+            return false;
+        }
+        return true;
     });
 }
 function getHeaders(username, password) {
@@ -227,12 +240,15 @@ main().catch((error) => {
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const inputs = new inputs_1.Inputs();
+        let success;
         if (inputs.artifact) {
-            yield (0, download_1.downloadArtifact)(inputs);
+            success = yield (0, download_1.downloadArtifact)(inputs);
         }
         else if (inputs.artifacts.length > 0) {
-            yield (0, download_1.downloadUrls)(inputs);
+            success = yield (0, download_1.downloadUrls)(inputs);
         }
+        if (!success)
+            (0, core_1.setFailed)('Action failed with issues');
     });
 }
 

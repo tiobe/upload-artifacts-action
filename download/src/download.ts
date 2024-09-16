@@ -1,4 +1,4 @@
-import { debug, info } from '@actions/core'
+import { debug, info, error } from '@actions/core'
 import { Inputs } from './inputs'
 import { existsSync, createWriteStream } from 'fs'
 import { mkdir } from 'fs/promises'
@@ -11,7 +11,7 @@ import { UrlHelper } from '../../shared/utils/url'
 import { ExtendedArtifact } from './artifact'
 import { gt } from 'semver'
 
-export async function downloadArtifact(inputs: Inputs) {
+export async function downloadArtifact(inputs: Inputs): Promise<boolean> {
   const headers = getHeaders(inputs.username, inputs.password)
 
   const items = await retrieveArtifacts(inputs.artifactory, inputs.repo, headers)
@@ -34,10 +34,13 @@ export async function downloadArtifact(inputs: Inputs) {
     })
   }
 
+  let ok = true
   for (const file of artifact.files) {
     // size is not used, so use placeholder
-    await download({ name: file.name, url: file.downloadUrl, size: 0 }, inputs.targetdir, headers)
+    const succeeded = await download({ name: file.name, url: file.downloadUrl, size: 0 }, inputs.targetdir, headers)
+    if (!succeeded) ok = false
   }
+  return ok
 }
 
 async function retrieveArtifacts(artifactory: string, repo: string, headers: HeadersInit): Promise<Item[]> {
@@ -90,14 +93,19 @@ function getArtifactsWithName(items: Item[], name: string): ExtendedArtifact[] {
   return artifacts
 }
 
-export async function downloadUrls(inputs: Inputs) {
+export async function downloadUrls(inputs: Inputs): Promise<boolean> {
+  let ok = true
+
   const headers = getHeaders(inputs.username, inputs.password)
   for (const artifact of inputs.artifacts) {
-    await download(artifact, inputs.targetdir, headers)
+    const succeeded = await download(artifact, inputs.targetdir, headers)
+    if (!succeeded) ok = false
   }
+
+  return ok
 }
 
-async function download(artifact: Artifact, targetdir: string, headers: HeadersInit) {
+async function download(artifact: Artifact, targetdir: string, headers: HeadersInit): Promise<boolean> {
   info(`Downloading ${artifact.name} artifact from ${artifact.url.toString()}`)
 
   const response = await fetch(artifact.url, { headers })
@@ -113,7 +121,12 @@ async function download(artifact: Artifact, targetdir: string, headers: HeadersI
     const fileStream = createWriteStream(destination)
     response.body.pipe(fileStream)
     await finished(response.body.pipe(fileStream))
+  } else {
+    error(`${artifact.name} download failed with: ${response.status.toString()} - ${response.statusText}`)
+    return false
   }
+
+  return true
 }
 
 function getHeaders(username: string, password: string): HeadersInit {

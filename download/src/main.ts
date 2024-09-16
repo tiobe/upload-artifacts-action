@@ -10,9 +10,12 @@ main().catch((error: unknown) => {
 async function main() {
   const inputs = new Inputs()
 
+  let success
   if (inputs.artifact) {
-    await downloadArtifact(inputs)
+    success = await downloadArtifact(inputs)
   } else if (inputs.artifacts.length > 0) {
-    await downloadUrls(inputs)
+    success = await downloadUrls(inputs)
   }
+
+  if (!success) setFailed('Action failed with issues')
 }
