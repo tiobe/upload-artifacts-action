@@ -27,9 +27,6 @@ inputs:
   password:
     description: Password of the Nexus user
     required: false
-outputs:
-  downloaded:
-    description: The artifacts that have been downloaded.
 runs:
   using: node20
   main: dist/index.js
