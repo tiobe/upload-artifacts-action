@@ -1,5 +1,6 @@
-import { Artifact, Inputs } from '../interfaces'
-import { UrlHelper } from '../utils/url'
+import { Artifact } from '../../../shared/interfaces/artifact'
+import { UrlHelper } from '../../../shared/utils/url'
+import { Inputs } from '../inputs'
 import { error, info } from '@actions/core'
 import { context } from '@actions/github'
 import { parse } from 'canonical-path'
@@ -27,7 +28,7 @@ export async function upload(inputs: Inputs): Promise<Artifact[]> {
   const artifacts: Artifact[] = []
   for (const file of inputs.files) {
     const fileBase = parse(file).base
-    const url = new UrlHelper(repo.href).appendPath(...targetdir, fileBase)
+    const url = new UrlHelper(repo.href).appendPath(...targetdir).appendPath(fileBase)
 
     const readStream = createReadStream(file)
     const response = await fetch(url.href, {

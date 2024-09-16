@@ -6,9 +6,3 @@ export interface Inputs {
   username: string
   password: string
 }
-
-export interface Artifact {
-  name: string
-  size: number
-  url: string
-}

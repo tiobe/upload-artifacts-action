@@ -1,9 +1,9 @@
 import { debug, getInput, getMultilineInput, setFailed, setOutput } from '@actions/core'
-import { Inputs } from './interfaces'
+import { Inputs } from './inputs'
 import { upload } from './upload/upload'
 import { lstat } from 'fs/promises'
 import fetch from 'node-fetch'
-import { UrlHelper } from './utils/url'
+import { UrlHelper } from '../../shared/utils/url'
 import { writeSummary } from './summary/summary'
 
 main().catch((error: unknown) => {

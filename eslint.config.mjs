@@ -1,6 +1,6 @@
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import prettierConfig from 'eslint-config-prettier';
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import prettierConfig from 'eslint-config-prettier'
 import tsparser from '@typescript-eslint/parser'
 
 export default tseslint.config(
@@ -11,14 +11,14 @@ export default tseslint.config(
   prettierConfig,
   {
     files: ['**/*.ts', '**/*.js'],
-    ignores: ['dist/*', 'lib/*', 'eslint.config.js'],
+    ignores: ['dist/*', 'lib/*', 'eslint.config.mjs'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
         project: './tsconfig.json',
         sourceType: 'module',
-        ecmaVersion: 'latest'
-      }
-    }
-  }
-);
+        ecmaVersion: 'latest',
+      },
+    },
+  },
+)

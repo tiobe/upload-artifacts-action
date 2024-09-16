@@ -1,5 +1,5 @@
 import { summary } from '@actions/core'
-import { Artifact } from '../interfaces'
+import { Artifact } from '../../../shared/interfaces/artifact'
 import { SummaryTableCell, SummaryTableRow } from '@actions/core/lib/summary'
 
 export async function writeSummary(artifacts: Artifact[]) {

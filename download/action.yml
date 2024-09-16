@@ -1,0 +1,35 @@
+name: TIOBE Nexus Download
+description: Download artifacts from the Nexus repository
+inputs:
+  artifactory:
+    description: Nexus artifactory to download from
+    required: false
+    default: https://artifacts.tiobe.com
+  repo:
+    description: Name of the Nexus repository to download from
+    required: false
+  artifact:
+    description: Artifact to download. Cannot be used in combination with files.
+    required: false
+  version:
+    description: The version (tag) of the artifact to download. Used in combination with artifact, if not set it will take the latest version.
+    required: false
+  upload-output:
+    description: Output of the upload action. This cannot be used in combination with setting artifact.
+    required: true
+  targetdir:
+    description: Target directory of the downloads.
+    required: false
+    default: .
+  username:
+    description: Nexus username
+    required: false
+  password:
+    description: Password of the Nexus user
+    required: false
+outputs:
+  downloaded:
+    description: The artifacts that have been downloaded.
+runs:
+  using: node20
+  main: dist/index.js

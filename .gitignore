@@ -111,6 +111,3 @@ __tests__/runner/*
 
 # build
 lib
-
-# test files
-.github/workflows/action.yml
