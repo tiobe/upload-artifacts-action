@@ -16,7 +16,7 @@ inputs:
     required: false
   upload-output:
     description: Output of the upload action. This cannot be used in combination with setting artifact.
-    required: true
+    required: false
   targetdir:
     description: Target directory of the downloads.
     required: false

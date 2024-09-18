@@ -1,6 +1,10 @@
 # Dependency directory
 node_modules
 
+# test workflows
+.github/workflows/download.yml
+.github/workflows/upload.yml
+
 # Rest pulled from https://github.com/github/gitignore/blob/master/Node.gitignore
 # Logs
 logs

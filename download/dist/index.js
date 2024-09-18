@@ -142,11 +142,13 @@ function download(artifact, targetdir, headers) {
     return __awaiter(this, void 0, void 0, function* () {
         (0, core_1.info)(`Downloading ${artifact.name} artifact from ${artifact.url.toString()}`);
         const response = yield (0, node_fetch_1.default)(artifact.url, { headers });
+        const targetPath = path.resolve(targetdir);
         if (response.ok && response.body) {
-            if (!(0, fs_1.existsSync)(targetdir)) {
-                yield (0, promises_1.mkdir)(targetdir);
+            if (!(0, fs_1.existsSync)(targetPath)) {
+                (0, core_1.debug)(`${targetPath.toString()} does not exist, creating it.`);
+                yield (0, promises_1.mkdir)(targetPath, { recursive: true });
             }
-            const destination = path.resolve(targetdir, artifact.name);
+            const destination = path.join(targetPath, artifact.name);
             (0, core_1.debug)(`to: ${destination}`);
             const fileStream = (0, fs_1.createWriteStream)(destination);
             response.body.pipe(fileStream);

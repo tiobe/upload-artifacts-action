@@ -110,12 +110,14 @@ async function download(artifact: Artifact, targetdir: string, headers: HeadersI
 
   const response = await fetch(artifact.url, { headers })
 
+  const targetPath = path.resolve(targetdir)
   if (response.ok && response.body) {
-    if (!existsSync(targetdir)) {
-      await mkdir(targetdir)
+    if (!existsSync(targetPath)) {
+      debug(`${targetPath.toString()} does not exist, creating it.`)
+      await mkdir(targetPath, { recursive: true })
     }
 
-    const destination = path.resolve(targetdir, artifact.name)
+    const destination = path.join(targetPath, artifact.name)
     debug(`to: ${destination}`)
 
     const fileStream = createWriteStream(destination)
