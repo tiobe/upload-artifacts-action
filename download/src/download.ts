@@ -121,7 +121,6 @@ async function download(artifact: Artifact, targetdir: string, headers: HeadersI
     debug(`to: ${destination}`)
 
     const fileStream = createWriteStream(destination)
-    response.body.pipe(fileStream)
     await finished(response.body.pipe(fileStream))
   } else {
     error(`${artifact.name} download failed with: ${response.status.toString()} - ${response.statusText}`)

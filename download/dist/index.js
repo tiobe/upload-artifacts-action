@@ -151,7 +151,6 @@ function download(artifact, targetdir, headers) {
             const destination = path.join(targetPath, artifact.name);
             (0, core_1.debug)(`to: ${destination}`);
             const fileStream = (0, fs_1.createWriteStream)(destination);
-            response.body.pipe(fileStream);
             yield (0, promises_2.finished)(response.body.pipe(fileStream));
         }
         else {
