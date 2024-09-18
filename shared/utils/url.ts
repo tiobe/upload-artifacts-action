@@ -27,7 +27,7 @@ export class UrlHelper {
   }
 
   addQueryParam(param: string, value?: string): this {
-    if (value) this.url.searchParams.append(param, value)
+    if (value) this.url.searchParams.set(param, value)
     return this
   }
 }

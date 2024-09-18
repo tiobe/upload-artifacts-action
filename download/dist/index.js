@@ -292,7 +292,7 @@ class UrlHelper {
     }
     addQueryParam(param, value) {
         if (value)
-            this.url.searchParams.append(param, value);
+            this.url.searchParams.set(param, value);
         return this;
     }
 }

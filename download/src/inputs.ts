@@ -1,4 +1,4 @@
-import { getInput, info } from '@actions/core'
+import { getInput } from '@actions/core'
 import { Artifact } from '../../shared/interfaces/artifact'
 
 export class Inputs {
